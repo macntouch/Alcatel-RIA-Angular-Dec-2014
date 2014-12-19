@@ -3,9 +3,22 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Click Tracker</title>
+	<script>
+	(function(){
+		var count = 0;
+		function increment(){
+			++count;
+			document.getElementById("divMessage").innerHTML = count;
+		}
+		function init(){
+			document.getElementById("btnTrack").addEventListener("click", increment);
+		}
+		window.addEventListener("DOMContentLoaded", init);
+	})();
+	</script>
 </head>
 <body>
 	<input type="button" value="Track" id="btnTrack">
-	<div id="divMessage">0</div>
+	<div id="divMessage" >0</div>
 </body>
 </html>
