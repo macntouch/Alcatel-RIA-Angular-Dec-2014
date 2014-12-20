@@ -16,39 +16,87 @@
 	</style>
 	<script>
 	/* 
-
-
 	taskObject => id, name, isCompleted
 	taskStorage
 		- add (taskName)
 		- toggle (taskId)
 		- remove (taskId)
 		- getAll() => array of task objects from storage
+	*/
+	var taskStorage = (function(){
+		var storage = window.localStorage;
 
+		function addTask(taskName){
+			var id = new Date().getTime().toString();
+			var newTask = {
+				id : id,
+				name : taskName,
+				isCompleted : false
+			};
+			storage.setItem(id, JSON.stringify(newTask));
+			return newTask;
+		}
+
+		function toggleTask(id){
+			var task = JSON.parse(storage.getItem(id));
+			task.isCompleted = !task.isCompleted;
+			storage.setItem(id, JSON.stringify(task));
+		}
+		function removeTask(id){
+			storage.removeItem(id);
+		}
+		function getAllTasks(){
+			var result = [];
+			for(var i=0;i<storage.length;i++)
+				result.push(JSON.parse(storage.getItem(storage.key(i))))
+			return result;
+		}
+		return {
+			add : addTask,
+			remove : removeTask,
+			toggle : toggleTask,
+			getAll : getAllTasks
+		}
+	})();
 	</script>
 	<script>
 	(function(){
 		window.addEventListener("DOMContentLoaded", init);
+		window.addEventListener("storage" , loadTasksFromStorage);
+		
 		function init(){
 			document.getElementById("btnAdd").addEventListener("click", onBtnAddClick);
 			document.getElementById("btnRemoveCompleted").addEventListener("click", onBtnRemoveCompletedClick);
-
+			loadTasksFromStorage();
+		}
+		function loadTasksFromStorage(){
+			document.getElementById("olTaskList").innerHTML = "";
+			taskStorage.getAll().forEach(addTaskToList);
 		}
 		function onBtnAddClick(){
 			var taskName = document.getElementById("txtTask").value;
+			var newTask = taskStorage.add(taskName);
+			addTaskToList(newTask);
+		}
+		function addTaskToList(task){
 			var newTaskElement = document.createElement("li");
-			newTaskElement.innerHTML = taskName;
+			newTaskElement.setAttribute("task-id", task.id);
+			newTaskElement.innerHTML = task.name;
+			if (task.isCompleted)
+				newTaskElement.classList.add("completed");
 			newTaskElement.addEventListener("click", onTaskClick);
 			document.getElementById("olTaskList").appendChild(newTaskElement);
 		}
 		function onTaskClick(){
 			this.classList.toggle("completed");
+			taskStorage.toggle(this.getAttribute("task-id"));
 		}
 		function onBtnRemoveCompletedClick(){
 			var taskItems = document.getElementById("olTaskList").children;
 			for(var i= taskItems.length-1; i>=0; i--)
 				if (taskItems[i].classList.contains("completed")){
 					taskItems[i].removeEventListener("click", onTaskClick);
+					taskStorage.remove(taskItems[i].getAttribute("task-id"));
 					taskItems[i].remove();
 				}
 		}
