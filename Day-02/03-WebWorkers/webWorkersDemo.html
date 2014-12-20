@@ -9,11 +9,20 @@
 
 		worker.addEventListener("message", onMessage);
 		function onMessage(evtArg){
-			if (evtArg.data === "completed"){
-				displayMessage("Work Completed");
+			var data = evtArg.data;
+			switch	(data.type){
+				case  "progress" :
+					document.getElementById("workProgress").value = data.percentCompleted;
+					break;
+				case  "completed" :
+					displayMessage("Work Completed");
+					break;
+				default :
+					console.log(data);
+					break;
 			}
 		}
-		
+
 		window.addEventListener("DOMContentLoaded", function(){
 			document.getElementById("btnDoWork").addEventListener("click", onBtnDoWorkClick);
 		});

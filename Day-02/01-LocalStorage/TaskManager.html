@@ -24,7 +24,7 @@
 		- getAll() => array of task objects from storage
 	*/
 	var taskStorage = (function(){
-		var storage = window.localStorage;
+		var storage = window.sessionStorage;
 
 		function addTask(taskName){
 			var id = new Date().getTime().toString();
