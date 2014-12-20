@@ -1,0 +1,15 @@
+CACHE MANIFEST
+# Ver 2.0
+CACHE:
+#list all the resources you want to cache except the main html file
+taskStorage.js
+taskManager.js
+style.css
+
+NETWORK:
+#list all the resources you dont want to cache
+*
+
+FALLBACK:
+#list the fallback alternatives for online resources if there are any
+style-online.css style-offline.css
