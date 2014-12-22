@@ -1,24 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app>
 <head>
 	<meta charset="UTF-8">
 	<title>Task Manager</title>
+	<style type="text/css">
+	.completed {
+		color : red;
+		text-decoration: line-through;
+		font-style: italic;
+		font-weight: bold;
+	}
+	</style>
 	<script src="angular.js"></script>
 	<script>
 	function taskController($scope){
-		
+		$scope.list = [
+			{name : "Master JavaScript", isCompleted : false},
+			{name : "Learn jQuery", isCompleted : false},
+			{name : "Explore Angular.js", isCompleted : false}
+		];
+		$scope.addTask = function(){
+			$scope.list.push({
+				name : $scope.newTask,
+				isCompleted : false
+			});
+		};
+		$scope.toggle = function(task){
+			task.isCompleted = !task.isCompleted;
+		};
+		$scope.removeCompleted = function(){
+			$scope.list = $scope.list.filter(function(t){
+				return !t.isCompleted;
+			});
+		}
+		$scope.newTask = "Enter the new task";
 	}
 	</script>
 </head>
 <body>
 	<h1>Task Manager</h1>
 	<hr>
-	<div>
+	<div data-ng-controller="taskController">
+		<div>Task # : {{list.length}}</div>
 		<label for="">Task :</label>
-		<input type="text">
-		<input type="button" value="Add Task">
-		<input type="button" value="Remove Completed">
-		<ol></ol>
+		<input type="text" data-ng-model="newTask">
+		<input type="button" value="Add Task" data-ng-click="addTask()" data-ng-disabled="newTask === ''">
+		<input type="button" value="Remove Completed" data-ng-click="removeCompleted()">
+		<ol>
+			<li data-ng-repeat="task in list" data-ng-click="toggle(task)" data-ng-class="{completed : task.isCompleted}">{{task.name}}</li>
+		</ol>
 	</div>
 </body>
 </html>
