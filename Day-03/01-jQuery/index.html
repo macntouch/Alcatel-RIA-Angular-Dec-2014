@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>jQuery Intro</title>
+	<script src="jquery-2.1.1.js"></script>
+	<script>
+		/*
+			1. Locating DOM Nodes
+			2. Manipulate Attributes of DOM Nodes
+			3. Handle events
+			4. Manipulate styles
+			5. Animations
+			6. AJAX
+
+			jQuery 
+		*/
+		//window.addEventListener("DOMContentLoaded", init);
+		//$(document).ready(init);
+		$(init);
+		
+		function init(){
+			$("#btnGreet").click(function(){
+			    var name = $("#txtName").val();
+			    var greetMsg = "Hi " + name;
+			    $("#divMessage").html(greetMsg);
+			});
+		}
+	</script>
+</head>
+<body>
+	<input type="text" name="" id="txtName">
+	<input type="button" value="Greet" id="btnGreet" class="btnPrimary">
+	<div id="divMessage"></div>
+</body>
+</html>
