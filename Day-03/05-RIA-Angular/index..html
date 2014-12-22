@@ -12,7 +12,7 @@
 		font-size: 28pt;
 	}
 	</style>
-	<script src="jquery-2.1.1.js"></script>
+	
 	<script src="angular.js"></script>
 	<script>
 	function SalaryCalculator(){
@@ -45,7 +45,7 @@
 		</div>
 		<div><input type="button" value="Calculate" id="btnCalculate" ng-click="calc.calculate()"></div>
 		<div>
-			<div id="divResult">{{calc.salary}}</div>
+			<div id="divResult">{{calc.salary | currency}}</div>
 		</div>
 </body>
 </html>
