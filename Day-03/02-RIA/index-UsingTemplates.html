@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Salary Calculator</title>
+	<style>
+	label{
+		display : block;
+	}
+	#divResult{
+		color : red;
+		font-size: 28pt;
+	}
+	</style>
+	<script src="jquery-2.1.1.js"></script>
+	<script src="handlebars.js"></script>
+	<script>
+	function SalaryCalculator(defaults){
+		var _data = defaults || {
+			basic : 0,
+			hra : 0,
+			da : 0,
+			tax : 0,
+			salary : 0
+		};
+
+		this.get = function(attrName){
+			return _data[attrName];
+		};
+		this.set = function(attrName, value){
+			_data[attrName] = value;
+			triggerChange(attrName);
+			triggerChange("all");
+		};
+
+		var self = this;
+		function triggerChange(attrName){
+			var subscriptions = _subscribers[attrName] || [];
+			subscriptions.forEach(function(subscription){
+				subscription.call(self);
+			});
+		}
+
+		var _subscribers = {};
+		this.addSubscriber = function(attrName, subscriptionFn){
+			_subscribers[attrName] = _subscribers[attrName] || [];
+			_subscribers[attrName].push(subscriptionFn);
+		};
+		this.toJSON = function(){
+			return _data;
+		};
+	}
+	SalaryCalculator.prototype.calculate = function(){
+		var gross = this.get('basic') + this.get('hra') + this.get('da');
+		var net = gross * ((100-this.get('tax'))/100);
+		this.set('salary' , net);
+	}
+
+	function SalaryCalculatorView(calc){
+
+		var $el = this.$el = $("<div></div>");
+		var self = this;
+		this.init = function(){
+			calc.addSubscriber("all", function(){
+				self.render();
+			});
+
+			
+			//React to user actions
+			$el.on("change", "#txtBasic", function(){
+				calc.set('basic', parseInt($(this).val(),10));
+			});
+			$el.on("change", "#txtHra", function(){
+				calc.set('hra', parseInt($(this).val(),10));
+			});
+			$el.on("change", "#txtDa", function(){
+				calc.set('da', parseInt($(this).val(),10));
+			});
+			$el.on("change", "#rangeTax", function(){
+				calc.set('tax', parseInt($(this).val(),10));
+			});
+			
+
+			$el.on("click", "#btnCalculate", function(){
+				calc.calculate();
+			});
+		};
+
+		this.render = function(){
+			var templateHTML = $("#calculatorTemplate").html();
+			var templateFn = Handlebars.compile(templateHTML);
+			$el.html(templateFn(calc.toJSON()));
+			return this;
+		}
+
+	}
+	
+
+	$(function(){
+		//window.calc = new SalaryCalculator();	
+		
+
+		
+		
+	});
+	</script>
+	<script type="text/template" id="calculatorTemplate">
+		<hr>
+		<div><label for="">Basic :</label><input type="text" name="" id="txtBasic" value="{{basic}}"></div>
+		<div><label for="">Hra :</label><input type="text" name="" id="txtHra" value="{{hra}}"></div>
+		<div><label for="">Da :</label><input type="text" name="" id="txtDa" value="{{da}}"></div>
+		<div>
+			<label for="">Tax :</label>
+			<input type="range" name="" id="rangeTax" min="0" max="30" value="{{tax}}">
+			<span id="spanTax">{{tax}}%</span>
+		</div>
+		<div><input type="button" value="Calculate" id="btnCalculate"></div>
+		<div>
+			<div id="divResult">{{salary}}</div>
+		</div>
+	</script>
+</head>
+<body>
+	<h1>Salary Calculator</h1>
+	
+</body>
+</html>
