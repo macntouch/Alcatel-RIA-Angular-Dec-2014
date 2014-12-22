@@ -12,6 +12,92 @@
 		font-size: 28pt;
 	}
 	</style>
+	<script src="jquery-2.1.1.js"></script>
+	<script>
+	function SalaryCalculator(defaults){
+		var _data = defaults || {
+			basic : 0,
+			hra : 0,
+			da : 0,
+			tax : 0,
+			salary : 0
+		};
+
+		this.get = function(attrName){
+			return _data[attrName];
+		};
+		this.set = function(attrName, value){
+			_data[attrName] = value;
+			triggerChange(attrName);
+		};
+
+		var self = this;
+		function triggerChange(attrName){
+			var subscriptions = _subscribers[attrName] || [];
+			subscriptions.forEach(function(subscription){
+				subscription.call(self);
+			});
+		}
+
+		var _subscribers = {};
+		this.addSubscriber = function(attrName, subscriptionFn){
+			_subscribers[attrName] = _subscribers[attrName] || [];
+			_subscribers[attrName].push(subscriptionFn);
+		}
+	}
+	SalaryCalculator.prototype.calculate = function(){
+		var gross = this.get('basic') + this.get('hra') + this.get('da');
+		var net = gross * ((100-this.get('tax'))/100);
+		this.set('salary' , net);
+	}
+
+	$(function(){
+		window.calc = new SalaryCalculator();
+		//React to model changes
+
+		calc.addSubscriber("salary", function(){
+			$("#divResult").html(this.get('salary'));
+		});
+
+		calc.addSubscriber("basic", function(){
+			console.log(this);
+			$("#txtBasic").val(this.get('basic'));
+		});
+
+		calc.addSubscriber("hra", function(){
+			$("#txtHra").val(this.get('hra'));
+		});
+
+		calc.addSubscriber("da", function(){
+			$("#txtDa").val(this.get('da'));
+		});
+
+		calc.addSubscriber("tax", function(){
+			$("#rangeTax").val(this.get('tax'));
+			$("#spanTax").html(this.get('tax') + "%");
+		});
+		
+		//React to user actions
+		$("#txtBasic").change(function(){
+			calc.set('basic', parseInt($(this).val(),10));
+		});
+		$("#txtHra").change(function(){
+			calc.set('hra', parseInt($(this).val(),10));
+		});
+		$("#txtDa").change(function(){
+			calc.set('da', parseInt($(this).val(),10));
+		});
+		$("#rangeTax").change(function(){
+			calc.set('tax', parseInt($(this).val(),10));
+		});
+		
+
+		$("#btnCalculate").click(function(){
+			calc.calculate();
+		});
+		
+	});
+	</script>
 </head>
 <body>
 	<h1>Salary Calculator</h1>
