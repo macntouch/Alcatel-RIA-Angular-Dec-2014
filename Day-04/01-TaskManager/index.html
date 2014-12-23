@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="taskApp">
+<head>
+	<meta charset="UTF-8">
+	<title>Task Manager</title>
+	<style type="text/css">
+	.completed {
+		color : red;
+		text-decoration: line-through;
+		font-style: italic;
+		font-weight: bold;
+	}
+	</style>
+	<script src="angular.js"></script>
+	<script>
+
+		
+
+		var taskApp = angular.module("taskApp", []);
+
+		taskApp.factory("Task", function(){
+			function Task(defaults){
+				this.id = defaults.id || -1;
+				this.name = defaults.name || "";
+				this.isCompleted = defaults.isCompleted || false;
+			}
+			Task.prototype.toggle = function(){
+				this.isCompleted = !this.isCompleted;
+			}
+			return function(defaults){
+				return new Task(defaults);
+			}
+		});
+
+		taskApp.service("taskStorage", function TaskStorage(Task){
+			
+			var storage = window.localStorage;
+
+			this.add = function addTask(taskName){
+				var id = new Date().getTime().toString();
+				var newTask = Task({
+					id : id,
+					name : taskName,
+					isCompleted : false
+				});
+				storage.setItem(id, JSON.stringify(newTask));
+				return newTask;
+			};
+
+			this.save = function save(task){
+				storage.setItem(task.id, JSON.stringify(task));
+			};
+			this.remove = function removeTask(id){
+				storage.removeItem(id);
+			};
+
+			this.getAll = function getAllTasks(){
+				var result = [];
+				for(var i=0;i<storage.length;i++)
+					result.push(Task(JSON.parse(storage.getItem(storage.key(i)))));
+				return result;
+			};
+		});
+
+		taskApp.controller("taskController", function taskController($scope, Task, taskStorage){
+			console.dir(taskStorage);
+
+			/*$scope.list = [
+				Task({name : "Master JavaScript", isCompleted : false}),
+				Task({name : "Learn jQuery", isCompleted : false}),
+				Task({name : "Explore Angular.js", isCompleted : false})
+			];*/
+			//$scope.list = [];
+
+			$scope.list = taskStorage.getAll();
+
+			$scope.addTask = function(){
+				var newTask = taskStorage.add($scope.newTaskName);
+				$scope.list.push(newTask);
+			};
+			$scope.toggle = function(task){
+				task.toggle();
+				taskStorage.save(task);
+			};
+			$scope.removeCompleted = function(){
+				$scope.list.filter(function(t){
+					return t.isCompleted;
+				}).forEach(function(t){
+					taskStorage.remove(t.id);
+				});
+
+				$scope.list = $scope.list.filter(function(t){
+					return !t.isCompleted;
+				});
+			}
+			$scope.newTaskName = "Enter the new task";
+		});
+
+	
+	</script>
+</head>
+<body>
+	<h1>Task Manager</h1>
+	<hr>
+	<div data-ng-controller="taskController">
+		<div>Task # : {{list.length}}</div>
+		<label for="">Task :</label>
+		<input type="text" data-ng-model="newTaskName">
+		<input type="button" value="Add Task" data-ng-click="addTask()" data-ng-disabled="newTask === ''">
+		<input type="button" value="Remove Completed" data-ng-click="removeCompleted()">
+		<ol>
+			<li data-ng-repeat="task in list" data-ng-click="toggle(task)" data-ng-class="{completed : task.isCompleted}">{{task.name}}</li>
+		</ol>
+	</div>
+</body>
+</html>

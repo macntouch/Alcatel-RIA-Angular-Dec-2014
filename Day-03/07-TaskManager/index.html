@@ -43,8 +43,8 @@
 	<div data-ng-controller="taskController">
 		<div>Task # : {{list.length}}</div>
 		<label for="">Task :</label>
-		<input type="text" data-ng-model="newTask">
-		<input type="button" value="Add Task" data-ng-click="addTask()" data-ng-disabled="newTask === ''">
+		<input type="text" data-ng-model="newTaskName">
+		<input type="button" value="Add Task" data-ng-click="addTask()" data-ng-disabled="newTaskName === ''">
 		<input type="button" value="Remove Completed" data-ng-click="removeCompleted()">
 		<ol>
 			<li data-ng-repeat="task in list" data-ng-click="toggle(task)" data-ng-class="{completed : task.isCompleted}">{{task.name}}</li>
