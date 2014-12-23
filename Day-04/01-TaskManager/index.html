@@ -21,11 +21,20 @@
 		
 
 		var taskApp = angular.module("taskApp", []);
+		taskApp.constant('defaultTrimLength', 20);
+		taskApp.value("toMoment", moment);
 
-		taskApp.filter("fromNow", function(){
+		taskApp.filter("fromNow", function(toMoment){
 			return function(data){
 				data = data || new Date();
-				return moment(data).fromNow();
+				return toMoment(data).fromNow();
+			}
+		});
+		taskApp.filter("trim", function(defaultTrimLength){
+			return function(data, trimLength){
+				data = data || "";
+				trimLength = trimLength || defaultTrimLength;
+				return data.length <= trimLength ? data : data.substr(0,trimLength) + "...";
 			}
 		})
 
@@ -119,6 +128,9 @@
 		</select>
 		<input type="button" value="Add Task" data-ng-click="addTask(newTaskName, taskCategory)" data-ng-disabled="newTask === ''">
 		<input type="button" value="Remove Completed" data-ng-click="removeCompleted()">
+		<hr>
+		<input type="range" name="" id="" min="10" max="30" ng-model="trimLength" data-ng-init="trimLength=10">
+		<input type="search" data-ng-model="searchTask.name">
 		<!-- <ol>
 			<li data-ng-repeat="task in list" data-ng-click="toggle(task)" data-ng-class="{completed : task.isCompleted}">{{task.name | uppercase}}</li>
 		</ol> -->
@@ -130,8 +142,8 @@
 				<th data-ng-click="sortBy='createdOn'; sortOrder = sortBy === 'createdOn' ? !sortOrder: false">Created On</th>
 				<th ></th>
 			</tr>
-			<tr data-ng-repeat="task in list | orderBy:sortBy:sortOrder">
-				<td data-ng-class="{completed : task.isCompleted}">{{task.name}}</td>
+			<tr data-ng-repeat="task in list | filter:searchTask | orderBy:sortBy:sortOrder">
+				<td data-ng-class="{completed : task.isCompleted}">{{task.name | trim:trimLength}}</td>
 				<td>{{task.category}}</td>
 				<td>{{task.isCompleted ? "Completed" : "In Complete"}}</td>
 				<td>{{task.createdOn | fromNow}}</td>
