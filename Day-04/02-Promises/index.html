@@ -56,13 +56,13 @@
 			}
 		});
 
-		angular.module("taskApp").service("taskStorage", ['Task', function TaskStorage(T){
+		angular.module("taskApp").service("taskStorage", ['Task', '$window', '$http', '$q', function TaskStorage(Task, $window, $http, $q){
 			
-			var storage = window.localStorage;
+			var storage = $window.localStorage;
 
 			this.add = function addTask(taskName, taskCategory){
 				var id = new Date().getTime().toString();
-				var newTask = T({
+				var newTask = Task({
 					id : id,
 					name : taskName,
 					category : taskCategory,
@@ -80,16 +80,32 @@
 			};
 
 			this.getAll = function getAllTasks(){
-				var result = [];
+				/*var result = [];
 				for(var i=0;i<storage.length;i++)
-					result.push(T(JSON.parse(storage.getItem(storage.key(i)))));
-				return result;
+					result.push(Task(JSON.parse(storage.getItem(storage.key(i)))));
+				return result;*/
+				var deferred = $q.defer();
+				var promise = $http({method : "get", url : "/tasks"});
+				promise.then(function(response){
+					setTimeout(function(){
+						var result = response.data.list.map(function(taskObj){return Task(taskObj)});
+						console.log("transforming data");	
+						deferred.resolve(result);
+					},3000);
+				});
+				return deferred.promise;
+
 			};
 		}]);
 
-		angular.module("taskApp").controller("taskController", ['$scope','Task','taskStorage', function taskController($scope, Task, taskStorage){
-	
-			$scope.list = taskStorage.getAll();
+		angular.module("taskApp").controller("taskController", 
+			['$scope','Task','taskStorage', '$http', function taskController($scope, Task, taskStorage, $http){
+			
+			$scope.list = [];
+
+			taskStorage.getAll().then(function(result){
+				$scope.list = result;
+			});
 
 			$scope.addTask = function(taskName, taskCategory){
 				var newTask = taskStorage.add(taskName, taskCategory);
