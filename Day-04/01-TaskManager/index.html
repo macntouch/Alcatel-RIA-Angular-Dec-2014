@@ -10,18 +10,31 @@
 		font-style: italic;
 		font-weight: bold;
 	}
+	th {
+		cursor: pointer;
+	}
 	</style>
 	<script src="angular.js"></script>
+	<script src="moment.js"></script>
 	<script>
 
 		
 
 		var taskApp = angular.module("taskApp", []);
 
+		taskApp.filter("fromNow", function(){
+			return function(data){
+				data = data || new Date();
+				return moment(data).fromNow();
+			}
+		})
+
 		taskApp.factory("Task", function(){
 			function Task(defaults){
 				this.id = defaults.id || -1;
 				this.name = defaults.name || "";
+				this.category = defaults.category || "Official";
+				this.createdOn = defaults.createdOn || new Date();
 				this.isCompleted = defaults.isCompleted || false;
 			}
 			Task.prototype.toggle = function(){
@@ -36,11 +49,12 @@
 			
 			var storage = window.localStorage;
 
-			this.add = function addTask(taskName){
+			this.add = function addTask(taskName, taskCategory){
 				var id = new Date().getTime().toString();
 				var newTask = Task({
 					id : id,
 					name : taskName,
+					category : taskCategory,
 					isCompleted : false
 				});
 				storage.setItem(id, JSON.stringify(newTask));
@@ -63,19 +77,11 @@
 		});
 
 		taskApp.controller("taskController", function taskController($scope, Task, taskStorage){
-			console.dir(taskStorage);
-
-			/*$scope.list = [
-				Task({name : "Master JavaScript", isCompleted : false}),
-				Task({name : "Learn jQuery", isCompleted : false}),
-				Task({name : "Explore Angular.js", isCompleted : false})
-			];*/
-			//$scope.list = [];
-
+	
 			$scope.list = taskStorage.getAll();
 
-			$scope.addTask = function(){
-				var newTask = taskStorage.add($scope.newTaskName);
+			$scope.addTask = function(taskName, taskCategory){
+				var newTask = taskStorage.add(taskName, taskCategory);
 				$scope.list.push(newTask);
 			};
 			$scope.toggle = function(task){
@@ -93,7 +99,7 @@
 					return !t.isCompleted;
 				});
 			}
-			$scope.newTaskName = "Enter the new task";
+			
 		});
 
 	
@@ -106,11 +112,32 @@
 		<div>Task # : {{list.length}}</div>
 		<label for="">Task :</label>
 		<input type="text" data-ng-model="newTaskName">
-		<input type="button" value="Add Task" data-ng-click="addTask()" data-ng-disabled="newTask === ''">
+		<select data-ng-model="taskCategory">
+			<option value="Official">Official</option>
+			<option value="Personal">Personal</option>
+			<option value="Social">Social</option>
+		</select>
+		<input type="button" value="Add Task" data-ng-click="addTask(newTaskName, taskCategory)" data-ng-disabled="newTask === ''">
 		<input type="button" value="Remove Completed" data-ng-click="removeCompleted()">
-		<ol>
-			<li data-ng-repeat="task in list" data-ng-click="toggle(task)" data-ng-class="{completed : task.isCompleted}">{{task.name}}</li>
-		</ol>
+		<!-- <ol>
+			<li data-ng-repeat="task in list" data-ng-click="toggle(task)" data-ng-class="{completed : task.isCompleted}">{{task.name | uppercase}}</li>
+		</ol> -->
+		<table width="100%">
+			<tr>
+				<th data-ng-click="sortBy='name' ; sortOrder = sortBy === 'name' ? !sortOrder: false">Name</th>
+				<th data-ng-click="sortBy='category' ; sortOrder = sortBy === 'category' ? !sortOrder: false">Category</th>
+				<th data-ng-click="sortBy='isCompleted' ; sortOrder = sortBy === 'isCompleted' ? !sortOrder: false">Status</th>
+				<th data-ng-click="sortBy='createdOn'; sortOrder = sortBy === 'createdOn' ? !sortOrder: false">Created On</th>
+				<th ></th>
+			</tr>
+			<tr data-ng-repeat="task in list | orderBy:sortBy:sortOrder">
+				<td data-ng-class="{completed : task.isCompleted}">{{task.name}}</td>
+				<td>{{task.category}}</td>
+				<td>{{task.isCompleted ? "Completed" : "In Complete"}}</td>
+				<td>{{task.createdOn | fromNow}}</td>
+				<td><input type="button" value="Toggle" data-ng-click="toggle(task)"></td>
+			</tr>
+		</table>
 	</div>
 </body>
 </html>
