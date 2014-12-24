@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="customDirectiveApp">
+<head>
+	<meta charset="UTF-8">
+	<title>Custom Directives</title>
+	<script src="jquery-1.11.2.js"></script>
+	<script src="angular.js"></script>
+
+	<script>
+	angular.module("customDirectiveApp", [])
+		.controller("customDirectiveController", function($scope){
+			$scope.reset = function(){
+				console.log("Controller scope reset invoked");
+			}
+		})
+		.directive("helloWorld", function(){
+			var o =  {
+				restrict : "AE",
+				scope : {
+					color : "=colorAttr",
+					reset : "&resetAttr",
+					count : "@"
+				},
+				template : "<div>Hi there</div>",
+				link : function(scope, element, attr){
+					scope.$watch("color" , function(newValue, oldValue){
+						element.css("color", newValue);
+					});
+					scope.$watch("count", function(newValue){
+						var result = "";
+						for(var i=0;i<newValue;i++)
+						   result += o.template;
+						element.html(result);
+					});
+					element.click(function(){
+						console.log("element clicked");
+						scope.$apply(function(){
+							scope.color = "black";
+						});
+						scope.reset();
+					});
+				}
+			};
+			return o;
+
+		});
+	</script>
+</head>
+<body data-ng-controller="customDirectiveController">
+	<input type="text" ng-model="greetColor" ng-init="greetColor = 'blue'">
+	<input type="text" ng-model="greetCount">
+	<h1 hello-world color-attr="greetColor" reset-attr="reset()" count="{{greetCount}}"></h1>
+</body>
+</html>

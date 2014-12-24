@@ -79,7 +79,7 @@ angular.module('uiRouterSample', [
 
           // Showing off how you could return a promise from templateProvider
           templateProvider: ['$timeout',
-            function (        $timeout) {
+            function ($timeout) {
               return $timeout(function () {
                 return '<p class="lead">UI-Router Resources</p><ul>' +
                          '<li><a href="https://github.com/angular-ui/ui-router/tree/master/sample">Source for this Sample</a></li>' +
